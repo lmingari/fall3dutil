@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fall3dutil", 
-    version="1.0",
+    version="1.2",
     author="Leonardo Mingari",
     author_email="lmingari@gmail.com",
     description="Utilities for the FALL3D model",
@@ -20,7 +20,6 @@ setuptools.setup(
         'numpy',
         'requests',
         'datetime',
-        'argparser'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

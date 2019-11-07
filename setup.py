@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="fall3dutils", 
+    name="fall3dutil", 
     version="1.0",
     author="Leonardo Mingari",
     author_email="lmingari@gmail.com",
     description="Utilities for the FALL3D model",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/lmingari/fall3dutils",
+    url="https://github.com/lmingari/fall3dutil",
     packages=setuptools.find_packages(),
     install_requires=[
         'cdsapi',

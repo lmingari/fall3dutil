@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="metpy-lmingari", 
+    name="fall3d-metpy", 
     version="1.0",
     author="Leonardo Mingari",
-    author_email="leonardo.mingari@bsc.es",
+    author_email="lmingari@gmail.com",
     description="Met utilities for the FALL3D model",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/lmingari/metpy",
+    url="https://github.com/lmingari/fall3d-metpy",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

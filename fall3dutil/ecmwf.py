@@ -1,4 +1,5 @@
 import cdsapi
+import warnings
 
 class ERA5:
     database     = ""
@@ -9,9 +10,12 @@ class ERA5:
 
     def __init__(self, args):
         #time arguments
-        self.date_start = args.date_start
-        self.date_end   = args.date_end  
-        self.step       = args.step
+        if args.date_start>args.date_end:
+            warnings.warn("date_start greater than date_start. Swaping dates")
+            self.date_start, self.date_end = args.date_end, args.date_start
+        else:
+            self.date_start, self.date_end = args.date_start, args.date_end
+        self.step   = args.step
 
         #lat arguments
         self.latmin = args.latmin
@@ -42,7 +46,8 @@ class ERA5:
                                                                            latmax=self.latmax)
 
     def retrieve(self):
-        print(self.params)
+        if self.verbose:
+            print(self.params)
         c = cdsapi.Client()
         c.retrieve(self.database,self.params,self.output)
 
@@ -71,12 +76,29 @@ class ERA5pl(ERA5):
 
         self.database = 'reanalysis-era5-pressure-levels'
 
+        start_year  = self.date_start.year
+        end_year    = self.date_end.year
+
+        start_month = self.date_start.month
+        end_month   = self.date_end.month
+
+        start_day   = self.date_start.day
+        end_day     = self.date_end.day
+
+        if start_year != end_year:
+            raise ValueError('A different year for date_start and date_end is not allowed')
+
+        if start_month != end_month:
+            warnings.warn("Download multiple months partially is not allowed. Entire months will be downloaded")
+            start_day = 1
+            end_day   = 31
+
         #Parameters
         self.params['product_type']   = 'reanalysis'
-        self.params['time']           = ["{:02d}:00".format(i) for i in range(0,24,args.step)]
+        self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
         self.params['year']           = self.date_start.strftime("%Y")
-        self.params['month']          = self.date_start.strftime("%m")
-        self.params['day']            = ["{:02d}".format(i) for i in range(self.date_start.day,self.date_end.day+1)]
+        self.params['month']          = ["{month:02d}".format(month=i) for i in range(start_month,end_month+1)]
+        self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
         self.params['variable']       = [ 'geopotential',
                                           'specific_humidity',
                                           'temperature',
@@ -104,24 +126,41 @@ class ERA5sfc(ERA5):
 
         self.database = 'reanalysis-era5-single-levels'
 
+        start_year  = self.date_start.year
+        end_year    = self.date_end.year
+
+        start_month = self.date_start.month
+        end_month   = self.date_end.month
+
+        start_day   = self.date_start.day
+        end_day     = self.date_end.day
+
+        if start_year != end_year:
+            raise ValueError('A different year for date_start and date_end is not allowed')
+
+        if start_month != end_month:
+            warnings.warn("Download multiple months partially is not allowed. Entire months will be downloaded")
+            start_day = 1
+            end_day   = 31
+
         #Parameters
-        self.params['product_type'] = 'reanalysis'
-        self.params['time']         = ["{:02d}:00".format(i) for i in range(0,24,args.step)]
-        self.params['year']         = self.date_start.strftime("%Y")
-        self.params['month']        = self.date_start.strftime("%m")
-        self.params['day']          = ["{:02d}".format(i) for i in range(self.date_start.day,self.date_end.day+1)]
-        self.params['variable']     = [ '10m_u_component_of_wind',
-                                        '10m_v_component_of_wind',
-                                        '2m_dewpoint_temperature',
-                                        '2m_temperature',
-                                        'boundary_layer_height',
-                                        'friction_velocity',
-                                        'land_sea_mask',
-                                        'mean_sea_level_pressure',
-                                        'orography',
-                                        'soil_type',
-                                        'surface_pressure',
-                                        'total_precipitation',
-                                        'volumetric_soil_water_layer_1'
-                                       ]
+        self.params['product_type']   = 'reanalysis'
+        self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
+        self.params['year']           = self.date_start.strftime("%Y")
+        self.params['month']          = ["{month:02d}".format(month=i) for i in range(start_month,end_month+1)]
+        self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
+        self.params['variable']       = [ '10m_u_component_of_wind',
+                                          '10m_v_component_of_wind',
+                                          '2m_dewpoint_temperature',
+                                          '2m_temperature',
+                                          'boundary_layer_height',
+                                          'friction_velocity',
+                                          'land_sea_mask',
+                                          'mean_sea_level_pressure',
+                                          'orography',
+                                          'soil_type',
+                                          'surface_pressure',
+                                          'total_precipitation',
+                                          'volumetric_soil_water_layer_1'
+                                         ]
 

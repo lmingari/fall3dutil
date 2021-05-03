@@ -61,7 +61,8 @@ class GribFilter:
                                                                              res   = res, 
                                                                              fhhh  = fh )
         #Append level list
-        URL = URL + "".join(["&lev_"+item+"=on" for item in self.lev_list])
+        #URL = URL + "".join(["&lev_"+item+"=on" for item in self.lev_list])
+        URL = URL + "&all_lev=on"
         #Append variable list
         URL = URL + "".join(["&var_"+item+"=on" for item in self.var_list])
         #Append subste information
@@ -70,8 +71,8 @@ class GribFilter:
                                                                                                                latmin = self.latmin,
                                                                                                                latmax = self.latmax )
         #Append
-        URL = URL + "&dir=%2Fgfs.{date}%2F{cycle:02d}".format(date  = self.time_ref.strftime("%Y%m%d"),
-                                                              cycle = self.cycle)
+        URL = URL + "&dir=%2Fgfs.{date}%2F{cycle:02d}%2Fatmos".format(date  = self.time_ref.strftime("%Y%m%d"),
+                                                                      cycle = self.cycle)
         return URL
 
     def _downloadFile(self,url,local_filename):

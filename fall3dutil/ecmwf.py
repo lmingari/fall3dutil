@@ -89,15 +89,15 @@ class ERA5pl(ERA5):
             raise ValueError('A different year for date_start and date_end is not allowed')
 
         if start_month != end_month:
-            warnings.warn("Download multiple months partially is not allowed. Entire months will be downloaded")
-            start_day = 1
+            warnings.warn("Download multiple months partially is not allowed. Only start month will be downloaded")
+            #start_day = 1
             end_day   = 31
 
         #Parameters
         self.params['product_type']   = 'reanalysis'
         self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
         self.params['year']           = self.date_start.strftime("%Y")
-        self.params['month']          = ["{month:02d}".format(month=i) for i in range(start_month,end_month+1)]
+        self.params['month']          = "{month:02d}".format(month=start_month)
         self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
         self.params['variable']       = [ 'geopotential',
                                           'specific_humidity',
@@ -139,15 +139,15 @@ class ERA5sfc(ERA5):
             raise ValueError('A different year for date_start and date_end is not allowed')
 
         if start_month != end_month:
-            warnings.warn("Download multiple months partially is not allowed. Entire months will be downloaded")
-            start_day = 1
+            warnings.warn("Download multiple months partially is not allowed. Only start month will be downloaded")
+            #start_day = 1
             end_day   = 31
 
         #Parameters
         self.params['product_type']   = 'reanalysis'
         self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
         self.params['year']           = self.date_start.strftime("%Y")
-        self.params['month']          = ["{month:02d}".format(month=i) for i in range(start_month,end_month+1)]
+        self.params['month']          = "{month:02d}".format(month=start_month)
         self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
         self.params['variable']       = [ '10m_u_component_of_wind',
                                           '10m_v_component_of_wind',

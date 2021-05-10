@@ -45,6 +45,13 @@ class ERA5:
                                                                            latmin=self.latmin,
                                                                            latmax=self.latmax)
 
+        #Check if extended dataset is required
+        if self.date_start.year<1979 and self.date_end.year<1979:
+            warnings.warn("Requesting ERA5 back extension 1950-1978 (Preliminary version)")
+            self.back_extension = True
+        else:
+            self.back_extension = False
+
     def retrieve(self):
         if self.verbose:
             print(self.params)
@@ -56,7 +63,11 @@ class ERA5ml(ERA5):
         super().__init__(args)
 
         hr_list = ["{:02d}".format(i) for i in range(0,24,args.step)]
-        self.database = 'reanalysis-era5-complete'
+
+        if self.back_extension:
+            self.database = 'reanalysis-era5-complete-preliminary-back-extension'
+        else:
+            self.database = 'reanalysis-era5-complete'
 
         #Parameters
         self.params['class']    = 'ea'
@@ -74,7 +85,10 @@ class ERA5pl(ERA5):
     def __init__(self, args):
         super().__init__(args)
 
-        self.database = 'reanalysis-era5-pressure-levels'
+        if self.back_extension:
+            self.database = 'reanalysis-era5-pressure-levels-preliminary-back-extension'
+        else:
+            self.database = 'reanalysis-era5-pressure-levels'
 
         start_year  = self.date_start.year
         end_year    = self.date_end.year
@@ -124,7 +138,10 @@ class ERA5sfc(ERA5):
     def __init__(self, args):
         super().__init__(args)
 
-        self.database = 'reanalysis-era5-single-levels'
+        if self.back_extension:
+            self.database = 'reanalysis-era5-single-levels-preliminary-back-extension'
+        else:
+            self.database = 'reanalysis-era5-single-levels'
 
         start_year  = self.date_start.year
         end_year    = self.date_end.year

@@ -90,29 +90,11 @@ class ERA5pl(ERA5):
         else:
             self.database = 'reanalysis-era5-pressure-levels'
 
-        start_year  = self.date_start.year
-        end_year    = self.date_end.year
-
-        start_month = self.date_start.month
-        end_month   = self.date_end.month
-
-        start_day   = self.date_start.day
-        end_day     = self.date_end.day
-
-        if start_year != end_year:
-            raise ValueError('A different year for date_start and date_end is not allowed')
-
-        if start_month != end_month:
-            warnings.warn("Download multiple months partially is not allowed. Only start month will be downloaded")
-            #start_day = 1
-            end_day   = 31
-
         #Parameters
         self.params['product_type']   = 'reanalysis'
         self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
-        self.params['year']           = self.date_start.strftime("%Y")
-        self.params['month']          = "{month:02d}".format(month=start_month)
-        self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
+        self.params['date']           =  "{date1}/{date2}".format(date1=self.date_start.strftime("%Y-%m-%d"),
+                                                                  date2=self.date_end.strftime("%Y-%m-%d"))
         self.params['variable']       = [ 'geopotential',
                                           'specific_humidity',
                                           'temperature',
@@ -143,29 +125,11 @@ class ERA5sfc(ERA5):
         else:
             self.database = 'reanalysis-era5-single-levels'
 
-        start_year  = self.date_start.year
-        end_year    = self.date_end.year
-
-        start_month = self.date_start.month
-        end_month   = self.date_end.month
-
-        start_day   = self.date_start.day
-        end_day     = self.date_end.day
-
-        if start_year != end_year:
-            raise ValueError('A different year for date_start and date_end is not allowed')
-
-        if start_month != end_month:
-            warnings.warn("Download multiple months partially is not allowed. Only start month will be downloaded")
-            #start_day = 1
-            end_day   = 31
-
         #Parameters
         self.params['product_type']   = 'reanalysis'
         self.params['time']           = ["{hour:02d}:00".format(hour=i) for i in range(0,24,args.step)]
-        self.params['year']           = self.date_start.strftime("%Y")
-        self.params['month']          = "{month:02d}".format(month=start_month)
-        self.params['day']            = ["{day:02d}".format(day=i) for i in range(start_day,end_day+1)]
+        self.params['date']           =  "{date1}/{date2}".format(date1=self.date_start.strftime("%Y-%m-%d"),
+                                                                  date2=self.date_end.strftime("%Y-%m-%d"))
         self.params['variable']       = [ '10m_u_component_of_wind',
                                           '10m_v_component_of_wind',
                                           '2m_dewpoint_temperature',

@@ -138,7 +138,7 @@ class ERA5sfc(ERA5):
                                           'friction_velocity',
                                           'land_sea_mask',
                                           'mean_sea_level_pressure',
-                                          'orography',
+                                          'geopotential',
                                           'soil_type',
                                           'surface_pressure',
                                           'total_precipitation',

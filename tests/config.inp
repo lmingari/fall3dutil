@@ -1,0 +1,26 @@
+[DEFAULT]
+date    = 20230404 20230406
+lon     = 60 65
+lat     = 12 15
+time    = 0 12
+ens     = 4 6
+res     = 0.5
+cycle   = 12
+step    = 6
+
+[etna]
+date    = 20230304 20230306
+lon     = 13 17
+lat     = 35 40
+
+[europe]
+lon     = -50 50
+lat     = 30 80
+
+[puyehue]
+lon     = -90 -40
+lat     = -60 -20
+
+[raikoke]
+lon     = 150 220
+lat     = 30 75

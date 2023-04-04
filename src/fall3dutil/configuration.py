@@ -137,6 +137,7 @@ class Config:
             value=getattr(self,att,None)
             if not value is None:
                 print(f"{att}: {value}")
+        print("------------------------")
 
     @property
     def date(self):
@@ -187,3 +188,30 @@ class Config:
         else:
             raise ValueError("Expected longitude range: lonmin lonmax")
         self._lon = value
+
+    @property
+    def step(self):
+        """Time step in hours"""
+        return self._step
+
+    @step.setter
+    def step(self,value):
+        if value is None:
+            raise ValueError("Missing mandatory argument: step")
+        if value < 1:
+            raise ValueError("Expected step>=1")
+        self._step = value
+
+    @property
+    def res(self):
+        """Resolution in degrees"""
+        return self._res
+
+    @res.setter
+    def res(self,value):
+        if value is None:
+            raise ValueError("Missing mandatory argument: res")
+        if value <= 0:
+            raise ValueError("Expected res>0")
+        self._res = value
+

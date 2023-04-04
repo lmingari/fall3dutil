@@ -2,13 +2,14 @@
 date    = 20230404 20230406
 lon     = 60 65
 lat     = 12 15
-time    = 0 48
-ens     = 3 5
+time    = 0 12
+ens     = 4 6
 res     = 0.5
-cycle   = 06
-step    = 12
+cycle   = 12
+step    = 6
 
 [etna]
+date    = 20230304 20230306
 lon     = 13 17
 lat     = 35 40
 

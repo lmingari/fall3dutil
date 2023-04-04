@@ -179,6 +179,9 @@ class OpenDAP:
             print("closing output file")
             self.dst.close()
 
+    def set_server(self,server):
+        self.server = server
+
     def _getURL(self,time_url):
         return ""
 
@@ -309,7 +312,7 @@ class Gdas(OpenDAP):
             src = None
 
 class GFS(OpenDAP):
-    server  = "nomads.ncep.noaa.gov:9090"
+    server  = "nomads.ncep.noaa.gov:80"
     dims    = {'time'  : 'time', 
                'lev'   : 'lev', 
                'lat'   : 'lat',
@@ -337,7 +340,7 @@ class GFS(OpenDAP):
         super().__init__(args)
 
     def _getURL(self,time_url):
-        URL = "https://{server}/{thredds}/{datatype}/gfs{date}/{fname}"
+        URL = "http://{server}/{thredds}/{datatype}/gfs{date}/{fname}"
         if self.res==0.25 and self.step==1:
             datatype = "gfs_0p25_1hr"
         elif self.res==0.25 and self.step==3:

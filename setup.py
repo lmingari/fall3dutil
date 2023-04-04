@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fall3dutil", 
-    version="1.7",
+    version="1.8",
     author="Leonardo Mingari",
     author_email="lmingari@gmail.com",
     description="Utilities for the FALL3D model",
@@ -26,5 +26,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )

@@ -1,6 +1,6 @@
 [project]
 name            = "fall3dutil"
-version         = "1.8"
+version         = "2.0"
 authors         = [ { name="Leonardo Mingari", email="lmingari@gmail.com" } ]
 description     = "Utilities for the FALL3D model"
 readme          = "README.md"

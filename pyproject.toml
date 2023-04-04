@@ -1,0 +1,28 @@
+[project]
+name            = "fall3dutil"
+version         = "1.8"
+authors         = [ { name="Leonardo Mingari", email="lmingari@gmail.com" } ]
+description     = "Utilities for the FALL3D model"
+readme          = "README.md"
+license         = {file = "LICENSE"}
+requires-python = ">=3.7"
+classifiers     = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    'datetime',
+    'configparser',
+    'requests',
+    'cdsapi',
+    'warnings',
+]
+
+[project.urls]
+repository = "https://github.com/lmingari/fall3dutil"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+

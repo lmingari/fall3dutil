@@ -1,0 +1,25 @@
+[DEFAULT]
+date    = 20210312 20111022 20400101
+lon     = 60 65
+lat     = 12 15
+time    = 48
+ens     = 3 5
+res     = 0.5
+cycle   = 12
+step    = 6
+
+[etna]
+lon     = 13 17
+lat     = 35 40
+
+[europe]
+lon     = -50 50
+lat     = 30 80
+
+[puyehue]
+lon     = -90 -40
+lat     = -60 -20
+
+[raikoke]
+lon     = 150 220
+lat     = 30 75

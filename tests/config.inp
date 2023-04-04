@@ -1,12 +1,12 @@
 [DEFAULT]
-date    = 20210312 20111022 20400101
+date    = 20230404 20230406
 lon     = 60 65
 lat     = 12 15
-time    = 48
+time    = 0 48
 ens     = 3 5
 res     = 0.5
-cycle   = 12
-step    = 6
+cycle   = 06
+step    = 12
 
 [etna]
 lon     = 13 17

@@ -19,6 +19,7 @@ class GribFilter(Config):
 
     def __init__(self, args):
         super().__init__(args)
+        if self.verbose: self.printInfo()
 
     @property
     def server(self):

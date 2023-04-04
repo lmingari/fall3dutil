@@ -16,11 +16,15 @@ dependencies = [
     'configparser',
     'requests',
     'cdsapi',
-    'warnings',
 ]
 
 [project.urls]
 repository = "https://github.com/lmingari/fall3dutil"
+
+[project.optional-dependencies]
+test = [
+    "argparse"
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]

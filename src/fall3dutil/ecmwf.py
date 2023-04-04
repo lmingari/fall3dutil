@@ -50,8 +50,13 @@ class ERA5(Config):
         database = self._getDatabase()
         fname    = self._getFname()
         if self.verbose: print(f"Requesting file {fname}")
-#        c = cdsapi.Client()
-#        c.retrieve(database,params,fname)
+        try:
+            c = cdsapi.Client()
+        except Exception as e:
+            msg = f"{e}\n" 
+            msg += "In order to install the CDS API key follow the instruction here: https://cds.climate.copernicus.eu/api-how-to"
+            raise Exception(msg)
+        c.retrieve(database,params,fname)
 
     def _getParams(self):
         '''Define the config dictionary required by CDS'''

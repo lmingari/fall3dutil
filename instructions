@@ -1,2 +1,12 @@
+# Testing
+python3 -m venv /path/to/my/env
+source /path/to/my/env/bin/activate
+python3 -m pip install .
+
+# Building
+python3 -m pip install --upgrade build
+python3 -m build
+
+# Uploading
 python3 setup.py sdist bdist_wheel
 python3 -m twine upload --verbose dist/*

@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+Download the NCEP operational Global Forecast 
+System (GFS) analysis and forecast data required
+by the FALL3D model
+"""
 import argparse
 from fall3dutil import GFS
 

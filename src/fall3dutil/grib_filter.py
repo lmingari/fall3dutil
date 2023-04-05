@@ -67,9 +67,7 @@ class GribFilter(Config):
         self._time = value
 
     def save_data(self):
-        URL_base   = self._getURL()
-        for fname in self._fnames():
-            URL = URL_base.format(fname=fname)
+        for fname, URL in self._fnames():
             if self.verbose: print(f"Saving file: {fname}")
             try:
                 self._downloadFile(URL,fname)
@@ -152,7 +150,7 @@ class GFS(GribFilter):
     def __init__(self, args):
         super().__init__(args)
 
-    def _getURL(self):
+    def _getURL(self,fname):
         URL = "https://{server}/cgi-bin/filter_{dataset}_{res}.pl?".format(
                 server  = self.server,
                 dataset = self.url_conf[self.res]['dataset'],
@@ -166,7 +164,7 @@ class GFS(GribFilter):
                 datadir = self.url_conf[self.res]['datadir'])
 
         #Append filename
-        URL += "&file={fname}"
+        URL += "&file={fname}".format(fname=fname)
 
         #Append level list
         URL += "&all_lev=on"
@@ -185,21 +183,20 @@ class GFS(GribFilter):
 
         return URL
 
-    def _getFname(self):
-        fname  = "{dataset}.t{cycle:02d}z.{ext}.{res}.".format(
+    def _getFname(self,time):
+        fname  = "{dataset}.t{cycle:02d}z.{ext}.{res}.f{time:03d}".format(
                 dataset = self.url_conf[self.res]['dataset'],
                 cycle   = self.cycle,
                 ext     = self.url_conf[self.res]['ext'],
                 res     = self.url_conf[self.res]['res'],
-                )
-        fname += "f{time:03d}"
+                time    = time)
         return fname
 
     def _fnames(self):
-        fname_base = self._getFname()
         for it in range(self.time[0],self.time[1]+1,self.step):
-            fname = fname_base.format(time=it)
-            yield fname
+            fname = self._getFname(it)
+            URL   = self._getURL(fname)
+            yield (fname, URL)
 
 class GEFS(GribFilter):
     '''
@@ -258,8 +255,8 @@ class GEFS(GribFilter):
                 ]
 
     url_conf = {
-            0.5:  {'res': "0p50", 'res1': "0p50a", 'res2': "p5",  'ext': "pgrb2a", 'dataset': "gefs", 'datadir': "atmos"},
-            0.25: {'res': "0p25", 'res1': "0p25s", 'res2': "p25", 'ext': "pgrb2s", 'dataset': "gefs", 'datadir': "atmos"},
+            0.5:  {'res': "0p50", 'ext': "pgrb2", 'dataset': "gefs", 'datadir': "atmos"},
+            0.25: {'res': "0p25", 'ext': "pgrb2", 'dataset': "gefs", 'datadir': "atmos"},
             }
 
     def __init__(self, args):
@@ -283,33 +280,30 @@ class GEFS(GribFilter):
                 raise ValueError("Expected a range for ens: ensmin ensmax")
         self._ens = value
 
-    def _getURL(self):
+    def _getURL(self,fname,dataid):
         URL = "https://{server}/cgi-bin/filter_{dataset}_{datadir}_{res}.pl?".format(
                 server  = self.server,
                 dataset = self.url_conf[self.res]['dataset'],
                 datadir = self.url_conf[self.res]['datadir'],
-                res     = self.url_conf[self.res]['res1'])
+                res     = self.url_conf[self.res]['res']+dataid)
 
         #Append directory
         URL += "dir=%2F{dataset}.{date}%2F{cycle:02d}%2F{datadir}%2F{ext}{res}".format(
                 dataset = self.url_conf[self.res]['dataset'],
-                datadir = self.url_conf[self.res]['datadir'],
                 date    = self.date[0].strftime("%Y%m%d"),
                 cycle   = self.cycle,
-                ext     = self.url_conf[self.res]['ext'],
-                res     = self.url_conf[self.res]['res2'] )
+                datadir = self.url_conf[self.res]['datadir'],
+                ext     = self.url_conf[self.res]['ext']+dataid,
+                res     = self.url_conf[self.res]['res'].replace("0","") )
 
         #Append filename
-        URL += "&file={fname}"
-
-        #Append variable list
-        URL += "".join(["&var_"+item+"=on" for item in self.var_list])
-
-        if self.res==0.25:
-            URL = URL.replace("&var_VVEL=on","")
+        URL += "&file={fname}".format(fname=fname)
 
         #Append level list
         URL += "&all_lev=on"
+
+        #Append variable list
+        URL += "".join(["&var_"+item+"=on" for item in self.var_list])
 
         #Append crop information
         URL += "&subregion="
@@ -322,19 +316,19 @@ class GEFS(GribFilter):
 
         return URL
 
-    def _getFname(self):
-        fname  = "gep{ens:02d}."
-        fname += "t{cycle:02d}z.{ext}.{res}.".format(
-                  cycle = self.cycle,
-                  ext   = self.url_conf[self.res]['ext'],
-                  res   = self.url_conf[self.res]['res'],
-                  )
-        fname += "f{time:03d}"
+    def _getFname(self,ens,dataid,time):
+        fname  = "gep{ens:02d}.t{cycle:02d}z.{ext}.{res}.f{time:03d}".format(
+                ens   = ens,
+                cycle = self.cycle,
+                ext   = self.url_conf[self.res]['ext']+dataid,
+                res   = self.url_conf[self.res]['res'],
+                time  = time)
         return fname
 
     def _fnames(self):
-        fname_base = self._getFname()
-        for ie in range(self.ens[0],self.ens[1]+1):
-            for it in range(self.time[0],self.time[1]+1,self.step):
-                fname = fname_base.format(time=it,ens=ie)
-                yield fname
+        for dataid in ['a','b']:
+            for ie in range(self.ens[0],self.ens[1]+1):
+                for it in range(self.time[0],self.time[1]+1,self.step):
+                    fname = self._getFname(ie,dataid,it)
+                    URL   = self._getURL(fname,dataid)
+                    yield (fname, URL)

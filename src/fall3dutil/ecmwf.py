@@ -2,9 +2,9 @@ from .configuration import Config
 import cdsapi
 import warnings
 
-class ERA5(Config):
+class ECMWF(Config):
     '''
-    Base object to request and download ERA5 
+    Base object to request and download  
     Weather Files from ECMWF using the Climate 
     Data Store (CDS) Application Program Interface (API)
 
@@ -20,29 +20,6 @@ class ERA5(Config):
     def __init__(self, args):
         super().__init__(args)
         if self.verbose: self.printInfo()
-
-    @Config.date.setter
-    def date(self,value):
-        super(ERA5,type(self)).date.fset(self,value)
-        nvalue = len(self._date)
-        if nvalue > 1:
-            start_date, end_date = self._date[:2]
-            if start_date>end_date:
-                warnings.warn("date_start > date_end. Swaping dates")
-                self._date = [end_date,start_date]
-            else:
-                self._date = [start_date,end_date]
-        elif nvalue == 1:
-            self._date *= 2
-            warnings.warn("Using same date for date_start and date_end")
-        else:
-            raise ValueError("Missing mandatory argument: date")
-
-    @Config.lon.setter
-    def lon(self,value):
-        """western longitudes must be given as negative numbers"""
-        super(ERA5,type(self)).lon.fset(self,value)
-        self._lon = [((lon-180.)%360)-180. for lon in self._lon]
 
     def retrieve(self):
         '''Request and download data using the CDS API'''
@@ -60,6 +37,63 @@ class ERA5(Config):
 
     def _getParams(self):
         '''Define the config dictionary required by CDS'''
+        return {}
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        return ""
+
+    def _getFname(self):
+        '''Define the output filename'''
+        return "output.nc"
+
+    @Config.date.setter
+    def date(self,value):
+        super(ECMWF,type(self)).date.fset(self,value)
+        nvalue = len(self._date)
+        if nvalue > 1:
+            start_date, end_date = self._date[:2]
+            if start_date>end_date:
+                warnings.warn("date_start > date_end. Swaping dates")
+                self._date = [end_date,start_date]
+            else:
+                self._date = [start_date,end_date]
+        elif nvalue == 1:
+            self._date *= 2
+            warnings.warn("Using same date for date_start and date_end")
+        else:
+            raise ValueError("Missing mandatory argument: date")
+
+class ERA5(ECMWF):
+    '''
+    Base object to request and download ERA5 
+    Weather Files from ECMWF using the Climate 
+    Data Store (CDS) Application Program Interface (API)
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser 
+        object if arg.file if defined
+    '''
+
+    attrs = {
+         'lon':        'float2',
+         'lat':        'float2',
+         'res':        'float',
+         'step':       'int',
+         'verbose':    'bool',
+         'date':       'str',
+        }
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
         params = {'format': 'netcdf'}
         params['grid'] = "{res}/{res}".format(res=self.res)
         #North/West/South/East
@@ -70,14 +104,6 @@ class ERA5(Config):
                 latmax=self.lat[1])
         return params
 
-    def _getDatabase(self):
-        '''Define the database required by CDS'''
-        return None
-
-    def _getFname(self):
-        '''Define the output filename'''
-        return "output.nc"
-
     def _backExt(self):
         """Check if extended dataset is required"""
         output = False
@@ -87,6 +113,12 @@ class ERA5(Config):
             warnings.warn("Requesting ERA5 back extension 1950-1978 (Preliminary version)")
             output = True
         return output
+
+    @Config.lon.setter
+    def lon(self,value):
+        """western longitudes must be given as negative numbers"""
+        super(ERA5,type(self)).lon.fset(self,value)
+        self._lon = [((lon-180.)%360)-180. for lon in self._lon]
 
 class ERA5ml(ERA5):
     '''
@@ -165,7 +197,7 @@ class ERA5ml(ERA5):
 
 class ERA5pl(ERA5):
     '''
-    ERApl object to request and download ERA5 
+    ERA5pl object to request and download ERA5 
     reanalysis (pressure levels) files from ECMWF 
     using the Climate Data Store (CDS) Application 
     Program Interface (API).
@@ -199,6 +231,7 @@ class ERA5pl(ERA5):
     date : [datetime]
         Start and End dates in a 2-element list
     '''
+
     var_list = [
         'geopotential',
         'specific_humidity',
@@ -207,6 +240,7 @@ class ERA5pl(ERA5):
         'v_component_of_wind',
         'vertical_velocity',
         ]
+
     lev_list = [
         '1','2','3','5','7',
         '10','20','30','50','70',
@@ -342,3 +376,192 @@ class ERA5sfc(ERA5):
         date2 = self.date[1].strftime("%Y%m%d")
         fname = f"era5.sfc.{date1}-{date2}.nc" 
         return fname
+
+class CARRA(ECMWF):
+    '''
+    CARRA object to request and download CARRA 
+    reanalysis files from ECMWF using the 
+    Climate Data Store (CDS) Application 
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser 
+        object if arg.file if defined
+    '''
+
+    attrs = {
+         'step':       'int',
+         'verbose':    'bool',
+         'date':       'str',
+        }
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        date1 = self.date[0].strftime("%Y-%m-%d")
+        date2 = self.date[1].strftime("%Y-%m-%d")
+        time  = [f"{h:02d}:00" for h in range(0,24,self.step)]
+
+        #Parameters
+        params['format']         = 'grib'
+        params['domain']         = 'west_domain'
+        params['product_type']   = 'analysis'
+        params['time']           = time
+        params['date']           = f"{date1}/{date2}"
+
+        return params
+
+    @Config.step.setter
+    def step(self,value):
+        super(CARRA,type(self)).step.fset(self,value)
+        if self._step%3 != 0:
+            raise ValueError("Argument step should be a multiple of 3")
+
+class CARRApl(CARRA):
+    '''
+    CARRApl object to request and download CARRA 
+    reanalysis (pressure levels) files from ECMWF 
+    using the Climate Data Store (CDS) Application 
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser 
+        object if arg.file if defined
+
+    Attributes
+    ----------
+    step : int
+        Time step in hours
+    
+    verbose : bool
+        If print addition information
+    
+    date : [datetime]
+        Start and End dates in a 2-element list
+    '''
+    var_list = [
+        'geopotential',
+        'relative_humidity',
+        'temperature',
+        'u_component_of_wind',
+        'v_component_of_wind',
+        'geometric_vertical_velocity',
+        ]
+
+    lev_list = [
+        '1','2','3','5','7',
+        '10','20','30','50','70',
+        '100','125','150','175',
+        '200','225','250',
+        '300','350',
+        '400','450',
+        '500','550',
+        '600','650',
+        '700','750','775',
+        '800','825','850','875',
+        '900','925','950','975',
+        '1000'
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params['variable']       = self.var_list
+        params['pressure_level'] = self.lev_list
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-carra-pressure-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        fname = f"carra.pl.{date1}-{date2}.grib" 
+        return fname
+
+class CARRAsfc(CARRA):
+    '''
+    CARRAsfc object to request and download CARRA 
+    reanalysis (surface level) files from ECMWF 
+    using the Climate Data Store (CDS) Application 
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser 
+        object if arg.file if defined
+
+    Attributes
+    ----------
+    step : int
+        Time step in hours
+    
+    verbose : bool
+        If print addition information
+    
+    date : [datetime]
+        Start and End dates in a 2-element list
+    '''
+    var_list = [
+        '10m_u_component_of_wind',
+        '10m_v_component_of_wind',
+        '2m_relative_humidity',
+        '2m_temperature',
+        'land_sea_mask',
+        'orography',
+        'surface_pressure',
+        'surface_roughness',
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params['variable']   = self.var_list
+        params['level_type'] = 'surface_or_atmosphere'
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-carra-single-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        fname = f"carra.sfc.{date1}-{date2}.grib" 
+        return fname
+

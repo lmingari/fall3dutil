@@ -215,3 +215,64 @@ class Config:
             raise ValueError("Expected res>0")
         self._res = value
 
+    @property
+    def cycle(self):
+        """Cycle time"""
+        return self._cycle
+
+    @cycle.setter
+    def cycle(self,value):
+        if value is None:
+            raise ValueError("Missing mandatory argument: cycle")
+        elif value not in [0,6,12,18]:
+            raise ValueError("Wrong value for cycle. Valid cycles: 0,6,12,18")
+        else:
+            self._cycle = value
+    
+    @property
+    def time(self):
+        """Time forecast range in hours"""
+        return self._time
+
+    @time.setter
+    def time(self,value):
+        if value is None:
+            raise ValueError("Missing mandatory argument: time")
+        if len(value) > 1:
+            if value[0]>value[1]:
+                raise ValueError("Expected a range for time: tmin < tmax")
+            elif value[0]<0 or value[1]<0:
+                raise ValueError("Expected positive values for time")
+        elif len(value) < 2:
+                raise ValueError("Expected a range for time: tmin tmax")
+        self._time = value
+
+    @property
+    def ens(self):
+        """Ensemble member range"""
+        return self._ens
+
+    @ens.setter
+    def ens(self,value):
+        if value is None:
+            raise ValueError("Missing mandatory argument: ens")
+        if len(value) > 1:
+            if value[0]>value[1]:
+                raise ValueError("Expected a range for ens: ensmin < ensmax")
+            elif value[0]<0 or value[1]<0:
+                raise ValueError("Expected positive values for ens")
+        elif len(value) < 2:
+                raise ValueError("Expected a range for ens: ensmin ensmax")
+        self._ens = value
+
+    @property
+    def server(self):
+        """Server for connection"""
+        return self._server
+
+    @server.setter
+    def server(self,value):
+        if value is None:
+            self._server = "nomads.ncep.noaa.gov"
+        else:
+            self._server = value

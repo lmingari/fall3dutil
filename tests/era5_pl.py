@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Download ERA5 data in pressure levels required by FALL3D model.
+Download ERA5 data (pressure levels) required by FALL3D model.
 """
 import argparse
 from fall3dutil import ERA5pl

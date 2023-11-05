@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Download ERA5 data on the surface required by FALL3D model.
+Download ERA5 data (single level) required by FALL3D model.
 """
 import argparse
 from fall3dutil import ERA5sfc

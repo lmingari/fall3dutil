@@ -106,6 +106,7 @@ class GFS(GribFilter):
                  "UGRD",
                  "VGRD",
                  "VVEL",
+                 "SFCR",
                  "SOILW",
                 ]
 
@@ -213,15 +214,21 @@ class GEFS(GribFilter):
         Start date in first element list
     '''
 
-    var_list = [ "PRES",
-                 "HGT",
-                 "RH",
-                 "TMP",
-                 "UGRD",
-                 "VGRD",
-                 "VVEL",
-                 "SOILW",
+    var_list_a = [ "PRES",
+                   "HGT",
+                   "RH",
+                   "TMP",
+                   "UGRD",
+                   "VGRD",
+                   "VVEL",
                 ]
+
+    var_list_b = [ "PRATE",
+                   "LAND",
+                   "SFCR",
+                   "SOILW",
+                  ]
+
 
     url_conf = {
             0.5:  {'res': "0p50", 'ext': "pgrb2", 'dataset': "gefs", 'datadir': "atmos"},
@@ -254,7 +261,9 @@ class GEFS(GribFilter):
         URL += "&all_lev=on"
 
         #Append variable list
-        URL += "".join(["&var_"+item+"=on" for item in self.var_list])
+        var_list = self.var_list_a
+        if dataid == 'b': var_list += self.var_list_b
+        URL += "".join(["&var_"+item+"=on" for item in var_list])
 
         #Append crop information
         URL += "&subregion="

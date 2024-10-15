@@ -59,6 +59,9 @@ class Config:
     
     step : int
         Time step in hours
+
+    format : str
+        Format of output file
     
     verbose : bool
         If print addition information
@@ -77,6 +80,7 @@ class Config:
          'res':        'float',
          'cycle':      'int',
          'step':       'int',
+         'format':     'str',
          'verbose':    'bool',
          'server':     'str',
          'date':       'str',
@@ -276,3 +280,18 @@ class Config:
             self._server = "nomads.ncep.noaa.gov"
         else:
             self._server = value
+
+    @property
+    def format(self):
+        """Format of output file"""
+        return self._format
+
+    @format.setter
+    def format(self,value):
+        if value is None:
+            self._format = 'netcdf'
+        elif not value in ['netcdf','grib']:
+            raise ValueError("Invalid value for format: expected grib or netcdf")
+        else:
+            self._format = value
+

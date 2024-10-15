@@ -85,6 +85,7 @@ class ERA5(ECMWF):
          'lat':        'float2',
          'res':        'float',
          'step':       'int',
+         'format':     'str',
          'verbose':    'bool',
          'date':       'str',
         }
@@ -94,7 +95,7 @@ class ERA5(ECMWF):
 
     def _getParams(self):
         '''Define the config dictionary required by CDS'''
-        params = {'format': 'netcdf'}
+        params = {}
         params['grid'] = "{res}/{res}".format(res=self.res)
         #North/West/South/East
         params['area'] = "{latmax}/{lonmin}/{latmin}/{lonmax}".format(
@@ -149,6 +150,9 @@ class ERA5ml(ERA5):
     
     step : int
         Time step in hours
+
+    format : str
+        Format of the output file
     
     verbose : bool
         If print addition information
@@ -168,8 +172,6 @@ class ERA5ml(ERA5):
         time  = [f"{h:02d}" for h in range(0,24,self.step)]
 
         #Parameters
-        params['class']    = 'ea'
-        params['expver']   = '1'
         params['stream']   = 'oper'
         params['type']     = 'an'
         params['time']     = "/".join(time)
@@ -177,6 +179,7 @@ class ERA5ml(ERA5):
         params['levtype']  = 'ml'
         params['param']    = '129/130/131/132/133/135/152'
         params['levelist'] = '1/to/137'
+        params['format']   = self.format
 
         return params
 
@@ -192,7 +195,11 @@ class ERA5ml(ERA5):
         '''Define the output filename'''
         date1 = self.date[0].strftime("%Y%m%d")
         date2 = self.date[1].strftime("%Y%m%d")
-        fname = f"era5.ml.{date1}-{date2}.nc" 
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"era5.ml.{date1}-{date2}.{ext}" 
         return fname
 
 class ERA5pl(ERA5):
@@ -224,6 +231,9 @@ class ERA5pl(ERA5):
     
     step : int
         Time step in hours
+
+    format : str
+        Format of the output file
     
     verbose : bool
         If print addition information
@@ -273,6 +283,8 @@ class ERA5pl(ERA5):
         params['date']           = f"{date1}/{date2}"
         params['variable']       = self.var_list
         params['pressure_level'] = self.lev_list
+        params['data_format']    = self.format
+        params['download_format']= "unarchived"
 
         return params
 
@@ -288,7 +300,11 @@ class ERA5pl(ERA5):
         '''Define the output filename'''
         date1 = self.date[0].strftime("%Y%m%d")
         date2 = self.date[1].strftime("%Y%m%d")
-        fname = f"era5.pl.{date1}-{date2}.nc" 
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"era5.pl.{date1}-{date2}.{ext}" 
         return fname
 
 class ERA5sfc(ERA5):
@@ -321,6 +337,9 @@ class ERA5sfc(ERA5):
     step : int
         Time step in hours
     
+    format : str
+        Format of the output file
+
     verbose : bool
         If print addition information
     
@@ -359,6 +378,8 @@ class ERA5sfc(ERA5):
         params['time']           = time
         params['date']           =  f"{date1}/{date2}"
         params['variable']       = self.var_list
+        params['data_format']    = self.format
+        params['download_format']= "unarchived"
 
         return params
 
@@ -374,7 +395,11 @@ class ERA5sfc(ERA5):
         '''Define the output filename'''
         date1 = self.date[0].strftime("%Y%m%d")
         date2 = self.date[1].strftime("%Y%m%d")
-        fname = f"era5.sfc.{date1}-{date2}.nc" 
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"era5.sfc.{date1}-{date2}.{ext}" 
         return fname
 
 class CARRA(ECMWF):
@@ -396,6 +421,7 @@ class CARRA(ECMWF):
 
     attrs = {
          'step':       'int',
+         'format':     'str',
          'verbose':    'bool',
          'date':       'str',
         }
@@ -499,7 +525,11 @@ class CARRApl(CARRA):
         '''Define the output filename'''
         date1 = self.date[0].strftime("%Y%m%d")
         date2 = self.date[1].strftime("%Y%m%d")
-        fname = f"carra.pl.{date1}-{date2}.grib" 
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"carra.pl.{date1}-{date2}.{ext}" 
         return fname
 
 class CARRAsfc(CARRA):
@@ -562,6 +592,10 @@ class CARRAsfc(CARRA):
         '''Define the output filename'''
         date1 = self.date[0].strftime("%Y%m%d")
         date2 = self.date[1].strftime("%Y%m%d")
-        fname = f"carra.sfc.{date1}-{date2}.grib" 
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"carra.sfc.{date1}-{date2}.{ext}" 
         return fname
 

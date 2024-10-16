@@ -13,9 +13,10 @@ def main():
     parser.add_argument('-y', '--lat',     help='Latitude range',                  type=float, nargs=2, metavar=('latmin', 'latmax'))
     parser.add_argument('-r', '--res',     help='Spatial resolution (deg)',        type=float,          metavar='resolution')
     parser.add_argument('-s', '--step',    help='Temporal resolution (h)',         type=int,            metavar='step')
+    parser.add_argument('-f', '--format',  help='Format of output file',           type=str,            metavar='format', choices=['netcdf', 'grib']) 
     parser.add_argument('-b', '--block',   help='Block in the configuration file', type=str,            metavar='block')
     parser.add_argument('-i', '--input',   help='Configuration file',              type=str,            metavar='file')
-    parser.add_argument('-v', '--verbose', help="increase output verbosity",                            action="store_true")
+    parser.add_argument('-v', '--verbose', help="Increase output verbosity",                            action="store_true")
     args = parser.parse_args()
 
     a = ERA5ml(args)

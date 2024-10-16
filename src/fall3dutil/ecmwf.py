@@ -19,14 +19,20 @@ class ECMWF(Config):
     '''
     def __init__(self, args):
         super().__init__(args)
-        if self.verbose: self.printInfo()
 
     def retrieve(self):
         '''Request and download data using the CDS API'''
         params   = self._getParams()
         database = self._getDatabase()
         fname    = self._getFname()
-        if self.verbose: print(f"Requesting file {fname}")
+        if self.verbose: 
+            print(f"Requesting file {fname}")
+            print(f"Requesting dataset {database}")
+            print('+++ ---------------------')
+            print('+++ Request configuration')
+            print('+++ ---------------------')
+            for key,value in params.items():
+                print(f'+++ {key}: {value}')
         try:
             c = cdsapi.Client()
         except Exception as e:
@@ -420,10 +426,14 @@ class CARRA(ECMWF):
     '''
 
     attrs = {
+         'lon':        'float2',
+         'lat':        'float2',
+         'res':        'float',
          'step':       'int',
          'format':     'str',
          'verbose':    'bool',
          'date':       'str',
+         'domain':     'str',
         }
 
     def __init__(self, args):
@@ -438,11 +448,20 @@ class CARRA(ECMWF):
         time  = [f"{h:02d}:00" for h in range(0,24,self.step)]
 
         #Parameters
-        params['format']         = 'grib'
-        params['domain']         = 'west_domain'
         params['product_type']   = 'analysis'
         params['time']           = time
         params['date']           = f"{date1}/{date2}"
+        params['data_format']    = self.format
+        params['domain']         = self.domain
+
+        if (not self.lon is None) and (not self.lat is None):
+            params['area'] = "{latmax}/{lonmin}/{latmin}/{lonmax}".format(
+                    lonmin=self.lon[0],
+                    lonmax=self.lon[1],
+                    latmin=self.lat[0],
+                    latmax=self.lat[1])
+            if not self.res is None:
+                params['grid'] = "{res}/{res}".format(res=self.res)
 
         return params
 
@@ -451,6 +470,87 @@ class CARRA(ECMWF):
         super(CARRA,type(self)).step.fset(self,value)
         if self._step%3 != 0:
             raise ValueError("Argument step should be a multiple of 3")
+
+    @Config.lon.setter
+    def lon(self,value):
+        self._lon = value
+
+    @Config.lat.setter
+    def lat(self,value):
+        self._lat = value
+
+    @Config.res.setter
+    def res(self,value):
+        self._res = value
+
+class CARRAml(CARRA):
+    '''
+    CARRAml object to request and download CARRA 
+    reanalysis (model levels) files from ECMWF 
+    using the Climate Data Store (CDS) Application 
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser 
+        object if arg.file if defined
+
+    Attributes
+    ----------
+    step : int
+        Time step in hours
+       
+    format : str
+        Format of the output file
+    
+    verbose : bool
+        If print addition information
+    
+    date : [datetime]
+        Start and End dates in a 2-element list
+
+    domain : str
+        Carra domain (west_domain or east_domain)
+    '''
+    var_list = [
+        'specific_humidity',
+        'temperature',
+        'u_component_of_wind',
+        'v_component_of_wind',
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params['variable']    = self.var_list
+        params['model_level'] = [str(i) for i in range(1,66)]
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-carra-model-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"carra.ml.{date1}-{date2}.{ext}" 
+        return fname
 
 class CARRApl(CARRA):
     '''
@@ -472,12 +572,18 @@ class CARRApl(CARRA):
     ----------
     step : int
         Time step in hours
+       
+    format : str
+        Format of the output file
     
     verbose : bool
         If print addition information
     
     date : [datetime]
         Start and End dates in a 2-element list
+
+    domain : str
+        Carra domain (west_domain or east_domain)
     '''
     var_list = [
         'geopotential',
@@ -489,18 +595,14 @@ class CARRApl(CARRA):
         ]
 
     lev_list = [
-        '1','2','3','5','7',
-        '10','20','30','50','70',
-        '100','125','150','175',
-        '200','225','250',
-        '300','350',
-        '400','450',
-        '500','550',
-        '600','650',
-        '700','750','775',
-        '800','825','850','875',
-        '900','925','950','975',
-        '1000'
+        "10", "20", "30",
+        "50", "70", "100",
+        "150", "200", "250",
+        "300", "400", "500",
+        "600", "700", "750",
+        "800", "825", "850",
+        "875", "900", "925",
+        "950", "1000"
         ]
 
     def __init__(self, args):
@@ -553,11 +655,17 @@ class CARRAsfc(CARRA):
     step : int
         Time step in hours
     
+    format : str
+        Format of the output file
+ 
     verbose : bool
         If print addition information
     
     date : [datetime]
         Start and End dates in a 2-element list
+
+    domain : str
+        Carra domain (west_domain or east_domain)
     '''
     var_list = [
         '10m_u_component_of_wind',

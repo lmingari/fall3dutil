@@ -84,6 +84,7 @@ class Config:
          'verbose':    'bool',
          'server':     'str',
          'date':       'str',
+         'domain':     'str',
         }
 
     def __init__(self,args):
@@ -295,3 +296,16 @@ class Config:
         else:
             self._format = value
 
+    @property
+    def domain(self):
+        """Type of domain"""
+        return self._domain
+
+    @domain.setter
+    def domain(self,value):
+        if value is None:
+            self._domain = 'west_domain'
+        elif not value in ['east_domain','west_domain']:
+            raise ValueError("Invalid value for domain: expected east_domain or west_domain")
+        else:
+            self._domain = value

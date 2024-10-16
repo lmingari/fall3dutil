@@ -1,26 +1,40 @@
 [DEFAULT]
-date    = 20230404 20230406
-lon     = 60 65
-lat     = 12 15
-time    = 0 12
-ens     = 4 6
-res     = 0.5
+res     = 0.25
 cycle   = 12
 step    = 6
 
-[etna]
-date    = 20230304 20230306
-lon     = 13 17
-lat     = 35 40
+[etna_gfs]
+date    = 20080429            # Initial date
+lon     = 12 18               # Longitude range
+lat     = 36 39               # Latitude range
+time    = 0  24               # Time forecast range
+res     = 0.25                # Resolution in degrees
+cycle   = 0                   # Cycle (00Z, 06Z, 12Z or 18Z)
+step    = 3                   # Time resolution
 
-[europe]
-lon     = -50 50
-lat     = 30 80
+[fuego_gefs]
+date    = 20240306            # Initial date
+lon     = -130 -52            # Longitude range
+lat     = 0 33                # Latitude range
+time    = 0 48                # Time forecast range
+ens     = 1 12                # Ensemble member range
+res     = 0.5                 # Resolution in degrees
+cycle   = 0                   # Cycle (00Z, 06Z, 12Z or 18Z)
+step    = 3                   # Time resolution
 
-[puyehue]
-lon     = -90 -40
-lat     = -60 -20
+[etna_era5]
+date    = 20080429 20080430   # Initial/end dates
+lon     = 12 18               # Longitude range
+lat     = 36 39               # Latitude range
+res     = 0.25                # Resolution in degrees
+step    = 1                   # Time resolution (at least 1h)
+format  = grib                # Output format: grib or netcdf
 
-[raikoke]
-lon     = 150 220
-lat     = 30 75
+[iceland_carra]
+date    = 20210811 20210812   # Initial/end dates
+lon     = -25 -13             # Longitude range
+lat     = 63 67               # Latitude range
+res     = 0.1                 # Resolution in degrees
+step    = 24                  # Time frequency (at least 3h)
+domain  = west_domain         # Domain: east_domain or west_domain
+format  = netcdf              # Output format: grib or netcdf

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Download CARRA data (pressure levels) required by FALL3D model.
+Download CARRA data (model levels) required by FALL3D model.
 """
 import argparse
-from fall3dutil import CARRApl
+from fall3dutil import CARRAml
 
 def main():
     # Input parameters and options
@@ -20,7 +20,7 @@ def main():
     parser.add_argument('-v', '--verbose', help="Increase output verbosity",                            action="store_true")
     args = parser.parse_args()
 
-    a = CARRApl(args)
+    a = CARRAml(args)
     a.retrieve()
 
 if __name__ == '__main__':

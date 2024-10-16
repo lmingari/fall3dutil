@@ -59,6 +59,9 @@ class Config:
     
     step : int
         Time step in hours
+
+    format : str
+        Format of output file
     
     verbose : bool
         If print addition information
@@ -77,9 +80,11 @@ class Config:
          'res':        'float',
          'cycle':      'int',
          'step':       'int',
+         'format':     'str',
          'verbose':    'bool',
          'server':     'str',
          'date':       'str',
+         'domain':     'str',
         }
 
     def __init__(self,args):
@@ -276,3 +281,31 @@ class Config:
             self._server = "nomads.ncep.noaa.gov"
         else:
             self._server = value
+
+    @property
+    def format(self):
+        """Format of output file"""
+        return self._format
+
+    @format.setter
+    def format(self,value):
+        if value is None:
+            self._format = 'netcdf'
+        elif not value in ['netcdf','grib']:
+            raise ValueError("Invalid value for format: expected grib or netcdf")
+        else:
+            self._format = value
+
+    @property
+    def domain(self):
+        """Type of domain"""
+        return self._domain
+
+    @domain.setter
+    def domain(self,value):
+        if value is None:
+            self._domain = 'west_domain'
+        elif not value in ['east_domain','west_domain']:
+            raise ValueError("Invalid value for domain: expected east_domain or west_domain")
+        else:
+            self._domain = value

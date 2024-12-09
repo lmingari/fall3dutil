@@ -114,11 +114,8 @@ class ERA5(ECMWF):
     def _backExt(self):
         """Check if extended dataset is required"""
         output = False
-        if self.date[0].year<1950:
+        if self.date[0].year<1940:
             raise ValueError("Not available data for the requested date")
-        elif self.date[0].year<1979:
-            warnings.warn("Requesting ERA5 back extension 1950-1978 (Preliminary version)")
-            output = True
         return output
 
     @Config.lon.setter

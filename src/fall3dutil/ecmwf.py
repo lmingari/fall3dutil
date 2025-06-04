@@ -1,6 +1,12 @@
 from .configuration import Config
 import cdsapi
-import warnings
+import zipfile
+import logging
+import os
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("FALL3DUTIL")
 
 class ECMWF(Config):
     '''
@@ -20,19 +26,24 @@ class ECMWF(Config):
     def __init__(self, args):
         super().__init__(args)
 
+        # Set logger level based on use_verbose
+        if self.verbose:
+            logger.setLevel(logging.INFO)
+        else:
+            logger.setLevel(logging.WARNING)
+
     def retrieve(self):
         '''Request and download data using the CDS API'''
         params   = self._getParams()
         database = self._getDatabase()
         fname    = self._getFname()
-        if self.verbose: 
-            print(f"Requesting file {fname}")
-            print(f"Requesting dataset {database}")
-            print('+++ ---------------------')
-            print('+++ Request configuration')
-            print('+++ ---------------------')
-            for key,value in params.items():
-                print(f'+++ {key}: {value}')
+        logger.info(f"Requesting file {fname}")
+        logger.info(f"Requesting dataset {database}")
+        logger.info('+++ ---------------------')
+        logger.info('+++ Request configuration')
+        logger.info('+++ ---------------------')
+        for key,value in params.items():
+            logger.info(f'+++ {key}: {value}')
         try:
             c = cdsapi.Client()
         except Exception as e:
@@ -40,6 +51,7 @@ class ECMWF(Config):
             msg += "In order to install the CDS API key follow the instruction here: https://cds.climate.copernicus.eu/api-how-to"
             raise Exception(msg)
         c.retrieve(database,params,fname)
+        is_zipped = self._checkZip(fname)
 
     def _getParams(self):
         '''Define the config dictionary required by CDS'''
@@ -53,6 +65,18 @@ class ECMWF(Config):
         '''Define the output filename'''
         return "output.nc"
 
+    def _checkZip(self,fname):
+        is_zipped = zipfile.is_zipfile(fname)
+        if is_zipped:
+            logger.info(f"Detected zip file. Renaming {fname}")
+            basename, _ = os.path.splitext(fname)
+            new_fname = basename + ".zip"
+            try:
+                os.rename(fname, new_fname)
+            except OSError as e:
+                logger.warning(e)
+        return is_zipped
+
     @Config.date.setter
     def date(self,value):
         super(ECMWF,type(self)).date.fset(self,value)
@@ -60,13 +84,13 @@ class ECMWF(Config):
         if nvalue > 1:
             start_date, end_date = self._date[:2]
             if start_date>end_date:
-                warnings.warn("date_start > date_end. Swaping dates")
+                logger.warning("date_start > date_end. Swaping dates")
                 self._date = [end_date,start_date]
             else:
                 self._date = [start_date,end_date]
         elif nvalue == 1:
             self._date *= 2
-            warnings.warn("Using same date for date_start and date_end")
+            logger.warning("Using same date for date_start and date_end")
         else:
             raise ValueError("Missing mandatory argument: date")
 

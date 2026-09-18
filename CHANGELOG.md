@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [2.2.1] - 2026-09-18
 
+### Added
+- Implemented CERRA reanalysis
+
 ### Fixed
 - Fixed time compatibility with CARRA. Just days within the same month are allowed
 

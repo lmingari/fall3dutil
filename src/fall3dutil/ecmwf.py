@@ -3,6 +3,7 @@ import cdsapi
 import zipfile
 import logging
 import os
+import calendar
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
@@ -464,16 +465,14 @@ class CARRA(ECMWF):
         '''Define the config dictionary required by CDS'''
         params = super()._getParams()
 
-        date1 = self.date[0].strftime("%Y-%m-%d")
-        date2 = self.date[1].strftime("%Y-%m-%d")
         time  = [f"{h:02d}:00" for h in range(0,24,self.step)]
 
         #Parameters
         params['product_type']   = 'analysis'
         params['time']           = time
-        params['date']           = f"{date1}/{date2}"
         params['data_format']    = self.format
         params['domain']         = self.domain
+        self._setYearMonthDayParams(params)
 
         if (not self.lon is None) and (not self.lat is None):
             params['area'] = "{latmax}/{lonmin}/{latmin}/{lonmax}".format(
@@ -485,6 +484,29 @@ class CARRA(ECMWF):
                 params['grid'] = "{res}/{res}".format(res=self.res)
 
         return params
+
+    def _setYearMonthDayParams(self, params):
+        '''Set CDS year/month/day parameters for CARRA requests.
+
+        The CARRA CDS forms no longer accept a date range. They accept
+        year/month/day lists instead. To avoid requesting the cartesian
+        product of several months and days, keep a single-month request
+        and truncate longer ranges with a warning.
+        '''
+        start_date, end_date = self.date
+        if (start_date.year, start_date.month) != (end_date.year, end_date.month):
+            last_day = calendar.monthrange(start_date.year, start_date.month)[1]
+            end_date = start_date.replace(day=last_day)
+            logger.warning(
+                "CARRA requests using year/month/day are limited to one month. "
+                f"Truncating request to {start_date:%Y-%m-%d}/{end_date:%Y-%m-%d}"
+            )
+            self._date[1] = end_date
+
+        params.pop('date', None)
+        params['year'] = [f"{start_date.year:04d}"]
+        params['month'] = [f"{start_date.month:02d}"]
+        params['day'] = [f"{day:02d}" for day in range(start_date.day, end_date.day + 1)]
 
     @Config.step.setter
     def step(self,value):

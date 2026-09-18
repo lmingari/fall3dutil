@@ -430,6 +430,265 @@ class ERA5sfc(ERA5):
         fname = f"era5.sfc.{date1}-{date2}.{ext}" 
         return fname
 
+class CERRA(ECMWF):
+    '''
+    CERRA object to request and download CERRA
+    reanalysis files from ECMWF using the
+    Climate Data Store (CDS) Application
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser
+        object if arg.file if defined
+    '''
+
+    attrs = {
+         'lon':        'float2',
+         'lat':        'float2',
+         'res':        'float',
+         'step':       'int',
+         'format':     'str',
+         'verbose':    'bool',
+         'date':       'str',
+        }
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        time  = [f"{h:02d}:00" for h in range(0,24,self.step)]
+
+        #Parameters
+        params['grid'] = "{res}/{res}".format(res=self.res)
+        #North/West/South/East
+        params['area'] = "{latmax}/{lonmin}/{latmin}/{lonmax}".format(
+                lonmin=self.lon[0],
+                lonmax=self.lon[1],
+                latmin=self.lat[0],
+                latmax=self.lat[1])
+        params['data_type']    = ['reanalysis']
+        params['product_type'] = 'analysis'
+        params['time']         = time
+        params['data_format']  = self.format
+        self._setYearMonthDayParams(params)
+
+        return params
+
+    def _setYearMonthDayParams(self, params):
+        '''Set CDS year/month/day parameters for CERRA requests.'''
+        start_date, end_date = self.date
+        if (start_date.year, start_date.month) != (end_date.year, end_date.month):
+            last_day = calendar.monthrange(start_date.year, start_date.month)[1]
+            end_date = start_date.replace(day=last_day)
+            logger.warning(
+                "CERRA requests using year/month/day are limited to one month. "
+                f"Truncating request to {start_date:%Y-%m-%d}/{end_date:%Y-%m-%d}"
+            )
+            self._date[1] = end_date
+
+        params.pop('date', None)
+        params['year'] = [f"{start_date.year:04d}"]
+        params['month'] = [f"{start_date.month:02d}"]
+        params['day'] = [f"{day:02d}" for day in range(start_date.day, end_date.day + 1)]
+
+    @Config.step.setter
+    def step(self,value):
+        super(CERRA,type(self)).step.fset(self,value)
+        if self._step%3 != 0:
+            raise ValueError("Argument step should be a multiple of 3")
+
+class CERRAsfc(CERRA):
+    '''
+    CERRAsfc object to request and download CERRA
+    reanalysis (surface level) files from ECMWF
+    using the Climate Data Store (CDS) Application
+    Program Interface (API).
+
+    Parameters
+    ----------
+    arg : Namespace object
+        A Namespace object generated using the argparse
+        module with the list of required attributes.
+        In addition, attributes can be read from an
+        input configuration file using a ConfigParser
+        object if arg.file if defined
+
+    Attributes
+    ----------
+    lon : [float]
+        Longitudes range
+
+    lat : [float]
+        Latitudes range
+
+    res : float
+        Resolution in deg
+
+    step : int
+        Time step in hours
+
+    format : str
+        Format of the output file
+
+    verbose : bool
+        If print addition information
+
+    date : [datetime]
+        Start and End dates in a 2-element list
+    '''
+    var_list = [
+        '10m_wind_direction',
+        '10m_wind_speed',
+        '2m_relative_humidity',
+        '2m_temperature',
+        'land_sea_mask',
+        'orography',
+        'surface_pressure',
+        'surface_roughness',
+        'total_precipitation',
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params['variable']   = self.var_list
+        params['level_type'] = 'surface_or_atmosphere'
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-cerra-single-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"cerra.sfc.{date1}-{date2}.{ext}"
+        return fname
+
+class CERRAml(CERRA):
+    '''
+    CERRAml object to request and download CERRA
+    reanalysis (model levels) files from ECMWF
+    using the Climate Data Store (CDS) Application
+    Program Interface (API).
+    '''
+
+    var_list = [
+        'specific_humidity',
+        'temperature',
+        'u_component_of_wind',
+        'v_component_of_wind',
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params.pop('product_type', None)
+        params['variable']    = self.var_list
+        params['model_level'] = [str(i) for i in range(1,107)]
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-cerra-model-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"cerra.ml.{date1}-{date2}.{ext}"
+        return fname
+
+class CERRApl(CERRA):
+    '''
+    CERRApl object to request and download CERRA
+    reanalysis (pressure levels) files from ECMWF
+    using the Climate Data Store (CDS) Application
+    Program Interface (API).
+    '''
+
+    var_list = [
+        'geopotential',
+        'relative_humidity',
+        'temperature',
+        'u_component_of_wind',
+        'v_component_of_wind',
+        ]
+
+    lev_list = [
+        '1', '2', '3',
+        '5', '7', '10',
+        '20', '30', '50',
+        '70', '100', '150',
+        '200', '250', '300',
+        '400', '500', '600',
+        '700', '750', '800',
+        '825', '850', '875',
+        '900', '925', '950',
+        '975', '1000',
+        ]
+
+    def __init__(self, args):
+        super().__init__(args)
+
+    def _getParams(self):
+        '''Define the config dictionary required by CDS'''
+        params = super()._getParams()
+
+        #Parameters
+        params['variable']       = self.var_list
+        params['pressure_level'] = self.lev_list
+        params['product_type']   = ['analysis']
+
+        return params
+
+    def _getDatabase(self):
+        '''Define the database required by CDS'''
+        database = 'reanalysis-cerra-pressure-levels'
+        return database
+
+    def _getFname(self):
+        '''Define the output filename'''
+        date1 = self.date[0].strftime("%Y%m%d")
+        date2 = self.date[1].strftime("%Y%m%d")
+        if self.format == 'grib':
+            ext = 'grib'
+        else:
+            ext = 'nc'
+        fname = f"cerra.pl.{date1}-{date2}.{ext}"
+        return fname
+
 class CARRA(ECMWF):
     '''
     CARRA object to request and download CARRA 

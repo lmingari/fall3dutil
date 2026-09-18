@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Download CARRA data (single level) required by FALL3D model.
+Download CERRA data (pressure levels) required by FALL3D model.
 """
 import argparse
-from fall3dutil import CARRAsfc
+from fall3dutil import CERRApl
 
 def main():
     # Input parameters and options
@@ -14,13 +14,12 @@ def main():
     parser.add_argument('-r', '--res',     help='Spatial resolution (deg)',        type=float,          metavar='resolution')
     parser.add_argument('-s', '--step',    help='Temporal resolution (h)',         type=int,            metavar='step')
     parser.add_argument('-f', '--format',  help='Format of output file',           type=str,            metavar='format', choices=['netcdf', 'grib'])
-    parser.add_argument('-g', '--domain',  help='Grid domain',                     type=str,            metavar='domain', choices=['east_domain', 'west_domain']) 
     parser.add_argument('-b', '--block',   help='Block in the configuration file', type=str,            metavar='block')
     parser.add_argument('-i', '--input',   help='Configuration file',              type=str,            metavar='file')
     parser.add_argument('-v', '--verbose', help="Increase output verbosity",                            action="store_true")
     args = parser.parse_args()
 
-    a = CARRAsfc(args)
+    a = CERRApl(args)
     a.retrieve()
 
 if __name__ == '__main__':

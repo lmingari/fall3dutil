@@ -12,12 +12,8 @@ classifiers     = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    'datetime',
-    'configparser',
     'requests',
     'cdsapi',
-    'zipfile',
-    'logging',
 ]
 
 [project.urls]
